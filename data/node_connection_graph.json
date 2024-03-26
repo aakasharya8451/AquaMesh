@@ -1,0 +1,98 @@
+{
+    "node_detail": {
+        "0": {
+            "node_name": "A",
+            "api_endpoint": "None",
+            "type": "sim",
+            "work": "r"
+        },
+        "2": {
+            "node_name": "B",
+            "api_endpoint": "http://127.0.0.1:5001",
+            "type": "sim",
+            "work": "s"
+        },
+        "3": {
+            "node_name": "C",
+            "api_endpoint": "http://127.0.0.1:5002",
+            "type": "sim",
+            "work": "s"
+        },
+        "1": {
+            "node_name": "D",
+            "api_endpoint": "https://68f6-2401-4900-1c37-7200-d930-bd9f-a56-d109.ngrok-free.app",
+            "type": "act",
+            "work": "s"
+        },
+        "4": {
+            "node_name": "E",
+            "api_endpoint": "http://127.0.0.1:5003",
+            "type": "sim",
+            "work": "s"
+        },
+        "5": {
+            "node_name": "F",
+            "api_endpoint": "http://127.0.0.1:5004",
+            "type": "sim",
+            "work": "s"
+        }
+    },
+    "graph_link": {
+        "A": {
+            "E": 1,
+            "B": 2,
+            "C": 6,
+            "D": 10
+        },
+        "B": {
+            "A": 2,
+            "C": 1
+        },
+        "C": {
+            "B": 1,
+            "A": 6,
+            "D": 3
+        },
+        "D": {
+            "C": 3,
+            "A": 10,
+            "E": 15,
+            "F": 5
+        },
+        "E": {
+            "A": 1,
+            "D": 15,
+            "F": 8
+        },
+        "F": {
+            "E": 8,
+            "D": 5
+        }
+    },
+    "node_current_status": {
+        "A": {
+            "status": true,
+            "current_cap_status": 1
+        },
+        "B": {
+            "status": true,
+            "current_cap_status": 1
+        },
+        "C": {
+            "status": true,
+            "current_cap_status": 1
+        },
+        "D": {
+            "status": false,
+            "current_cap_status": -1
+        },
+        "E": {
+            "status": true,
+            "current_cap_status": 0
+        },
+        "F": {
+            "status": true,
+            "current_cap_status": 1
+        }
+    }
+}
