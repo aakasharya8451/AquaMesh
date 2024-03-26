@@ -1,0 +1,18 @@
+# Byte-compiled Python files
+*.pyc
+*.pyo
+# Compiled Python modules
+__pycache__/
+
+# Python egg metadata
+*.egg-info/
+
+# Virtual environment
+venv/
+
+# IDE files (e.g., PyCharm, VSCode, etc.)
+.idea/
+.vscode/
+
+# Environment configuration
+.env
