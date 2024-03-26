@@ -9,7 +9,7 @@ import json
 from flask import Flask, jsonify
 import random
 import time
-from kafka.producer import produce_messages
+from src.kafka.producer import produce_messages
 
 app = Flask(__name__)
 
