@@ -83,12 +83,12 @@
             "current_cap_status": 1
         },
         "D": {
-            "status": false,
+            "status": true,
             "current_cap_status": -1
         },
         "E": {
             "status": true,
-            "current_cap_status": 0
+            "current_cap_status": 1
         },
         "F": {
             "status": true,

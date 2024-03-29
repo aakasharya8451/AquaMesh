@@ -1,3 +1,5 @@
+from pymongo.server_api import ServerApi
+from pymongo.mongo_client import MongoClient
 import time
 import threading
 import json
@@ -17,6 +19,35 @@ from utils.shortest_route import ShortestRoute
 from utils.node_api_call import NodeAPICaller
 from utils.node_status_updater import NodeStatusUpdater
 
+class MongoDBManager:
+    def __init__(self):
+        # self.client = MongoClient(uri, server_api=ServerApi(version='1'))
+        self.client = MongoClient(
+            os.getenv("MONGODB_ATLAS_URI"), server_api=ServerApi(version='1'))
+
+    def connect_and_create_if_not_exists(self, database_name, collection_name):
+        self.db = self.client[database_name]
+        self.collection = self.db[collection_name]
+
+        # Check if the database exists, if not, create it
+        if database_name not in self.client.list_database_names():
+            print(f"Database '{database_name}' does not exist. Creating...")
+            self.db = self.client[database_name]
+
+        # Check if the collection exists, if not, create it
+        if collection_name not in self.db.list_collection_names():
+            print(f"Collection '{collection_name}' does not exist in database '{
+                  database_name}'. Creating...")
+            self.collection = self.db[collection_name]
+            # Optionally, you can define indexes or other configurations here
+
+    def insert_batch(self, batch):
+        try:
+            if batch:
+                result = self.collection.insert_many(batch)
+                print("Inserted batch of", len(batch), "messages")
+        except Exception as e:
+            print(e)
 
 class InitiateShortestRoute:
     def __init__(self, json_file):
@@ -155,6 +186,9 @@ class ArduinoNodeTracker:
 json_file = r'data\node_connection_graph.json'
 tracker = ArduinoNodeTracker(json_file)
 
+mongo_manager = MongoDBManager()
+mongo_manager.connect_and_create_if_not_exists('test', 'temp')
+
 # Kafka broker configurations
 kafka_cluster_server = f"{os.getenv('KAFKA_CLUSTER_SERVER_IP')}:{
     os.getenv('KAFKA_CLUSTER_SERVER_PORT')}"
@@ -178,7 +212,14 @@ def consume_messages(group_id):
     # Subscribe to topic(s)
     consumer.subscribe([topic_name])
 
+    batch_size = 1000  # Number of messages to batch
+    # Maximum time interval (in seconds) to wait before inserting a batch
+    batch_timeout = 10
+    batch = []
+
+
     join_time = time.time()
+    last_batch_time = time.time()
     try:
         while True:
             # Poll for messages
@@ -196,17 +237,26 @@ def consume_messages(group_id):
             message_timestamp = msg.timestamp()[1] / 1000.0
             if message_timestamp > join_time:
                 # Process the message
-                op = msg.value().decode('utf-8')
-                oy = json.loads(op)
+                raw_message = msg.value().decode('utf-8')
+                message = json.loads(raw_message)
                 # print(f"Received message: {oy}, {type(oy)}")
 
                 # Update last seen time for the Arduino ID
-                arduino_id = str(oy.get('arduinoID'))
+                arduino_id = str(message.get('arduinoID'))
                 tracker.update_node_status(arduino_id)
 
                 # Update moisture level for the Arduino ID
-                moisture_level = int(oy.get('moisture'))
+                moisture_level = int(message.get('moisture'))
                 tracker.update_moisture_level(arduino_id, moisture_level)
+
+                try:
+                    batch.append(message)
+                    if len(batch) >= batch_size or time.time() - last_batch_time >= batch_timeout:
+                        mongo_manager.insert_batch(batch)
+                        batch = []
+                        last_batch_time = time.time()
+                except Exception as e:
+                    print(e)     
 
     except KeyboardInterrupt:
         # Close the consumer on interrupt

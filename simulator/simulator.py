@@ -5,6 +5,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import threading
+from datetime import datetime, timezone
 import json
 from flask import Flask, jsonify
 import random
@@ -40,9 +41,12 @@ led_controller = LEDController()
 def get_moisture_data(arduino_id, lower_limit, upper_limit):
     time.sleep(1)
     moisture = random.randint(lower_limit, upper_limit)
+    current_time_utc = datetime.now(timezone.utc)
+    formatted_time_utc = current_time_utc.strftime("%H:%M:%S.%f")
     data = {
         "arduinoID": arduino_id,
-        "moisture": moisture
+        "moisture": moisture,
+        "time": formatted_time_utc
     }
     json_data = json.dumps(data)
     return json_data
